@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="icon" type="image/png" href="qrcode(6).png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-shapes span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 25s linear infinite;
+            bottom: -150px;
+            border-radius: 4px;
+        }
+
+        .bg-shapes span:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .bg-shapes span:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .bg-shapes span:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .bg-shapes span:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .bg-shapes span:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .bg-shapes span:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+        .bg-shapes span:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+        .bg-shapes span:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+        .bg-shapes span:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
+        .bg-shapes span:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .card {
+                padding: 24px;
+                border-radius: 18px;
+            }
+
+            .header {
+                margin-bottom: 24px;
+            }
+
+            .form-section {
+                gap: 18px;
+            }
+
+            .color-inputs {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .size-options {
+                gap: 8px;
+            }
+
+            .size-btn {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+
+            .generate-btn {
+                padding: 16px 24px;
+                font-size: 1rem;
+            }
+
+            .qr-preview {
+                width: 220px !important;
+                height: 220px !important;
+            }
+
+            .qr-preview.size-small {
+                width: 180px !important;
+                height: 180px !important;
+            }
+
+            .qr-preview.size-large {
+                width: 280px !important;
+                height: 280px !important;
+            }
+
+            .preview-section {
+                gap: 18px;
+            }
+
+            .download-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .toast {
+                bottom: 15px;
+                right: 15px;
+                left: 15px;
+                padding: 14px 18px;
+            }
+
+            .modal {
+                padding: 24px;
+                margin: 15px;
+            }
+
+            .modal h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .qr-preview {
+                width: 180px !important;
+                height: 180px !important;
+            }
+
+            .input-group textarea {
+                min-height: 80px;
+            }
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label i {
+            color: #667eea;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .input-group input::placeholder,
+        .input-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .color-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .color-picker-wrapper:hover {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .color-picker-wrapper input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-picker-wrapper span {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .color-picker-wrapper .color-hint {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: auto;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .size-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .size-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .size-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 18px 32px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .qr-preview {
+            width: 280px;
+            height: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .qr-preview.has-image {
+            border-style: solid;
+            border-color: rgba(102, 126, 234, 0.5);
+            background: #fff;
+            padding: 8px;
+        }
+
+        .qr-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qr-placeholder {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .qr-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .qr-placeholder p {
+            font-size: 0.95rem;
+        }
+
+        .download-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 28px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .download-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .download-btn.active:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #764ba2;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        }
+
+        /* Preset buttons */
+        .presets {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .preset-btn {
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #667eea;
+            color: #fff;
+        }
+
+        /* WiFi Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: rgba(30, 30, 50, 0.95);
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal h3 {
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal h3 i {
+            color: #667eea;
+        }
+
+        .modal-input {
+            margin-bottom: 16px;
+        }
+
+        .modal-input label {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .modal-input input, .modal-input select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-input input:focus, .modal-input select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-input select option {
+            background: #1e1e32;
+            color: #fff;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .modal-btn.cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+        }
+
+        .modal-btn.confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Password toggle */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper input {
+            flex: 1;
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            color: #667eea;
+        }
+
+        /* Dynamic QR preview sizes */
+        .qr-preview.size-small {
+            width: 200px;
+            height: 200px;
+        }
+
+        .qr-preview.size-medium {
+            width: 280px;
+            height: 280px;
+        }
+
+        .qr-preview.size-large {
+            width: 380px;
+            height: 380px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background shapes -->
+    <div class="bg-shapes">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1><i class="fas fa-qrcode"></i> QR Code Generator</h1>
+                <p>Create QR codes quickly and easily</p>
+            </div>
+
+            <div class="content">
+                <div class="form-section">
+                    <div class="input-group">
+                        <label><i class="fas fa-link"></i> Content</label>
+                        <textarea id="qr-data" placeholder="Enter URL, text or any data..."></textarea>
+                        <div class="presets">
+                            <button class="preset-btn" onclick="setPreset('')">URL</button>
+                            <button class="preset-btn" onclick="openWifiModal()"><i class="fas fa-wifi"></i> WiFi</button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fas fa-palette"></i> Colors</label>
+                        <div class="color-inputs">
+                            <label class="color-picker-wrapper">
+                                <input type="color" id="fill-color" value="#000000">
+                                <span>QR Color</span>
+                                <span class="color-hint"></span>
+                            </label>
+                            <label class="color-picker-wrapper">
+                                <input type="color" id="back-color" value="#ffffff">
+                                <span>Background</span>
+                                <span class="color-hint"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fas fa-expand"></i> Size</label>
+                        <div class="size-options">
+                            <button class="size-btn" data-size="5" onclick="setSize(5, this)">Small</button>
+                            <button class="size-btn active" data-size="10" onclick="setSize(10, this)">Medium</button>
+                            <button class="size-btn" data-size="20" onclick="setSize(20, this)">Large</button>
+                        </div>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateQR()">
+                        <i class="fas fa-magic"></i> Generate QR Code
+                    </button>
+                </div>
+
+                <div class="preview-section">
+                    <div class="qr-preview size-medium" id="qr-preview">
+                        <div class="qr-placeholder">
+                            <i class="fas fa-qrcode"></i>
+                            <p>Your QR code will appear here</p>
+                        </div>
+                    </div>
+                    <button class="download-btn" id="download-btn" onclick="downloadQR()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>Made with <i class="fas fa-heart" style="color: #f5576c;"></i> by Mirage</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WiFi Modal -->
+    <div class="modal-overlay" id="wifi-modal">
+        <div class="modal">
+            <h3><i class="fas fa-wifi"></i> WiFi QR Code</h3>
+            <div class="modal-input">
+                <label>Network Name (SSID)</label>
+                <input type="text" id="wifi-ssid" placeholder="Enter WiFi network name">
+            </div>
+            <div class="modal-input">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="wifi-password" placeholder="Enter WiFi password">
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="password-icon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-input">
+                <label>Encryption Type</label>
+                <select id="wifi-encryption">
+                    <option value="WPA">WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">No Password</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeWifiModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="applyWifi()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">QR code generated!</span>
+    </div>
+
+    <script>
+        let currentSize = 10;
+        let currentQrUrl = null;
+        let wifiData = null; // Gizli WiFi verisi
+
+        function setPreset(prefix) {
+            wifiData = null; // WiFi modunu temizle
+            const input = document.getElementById('qr-data');
+            input.value = prefix;
+            input.focus();
+            input.setSelectionRange(prefix.length, prefix.length);
+        }
+
+        function setSize(size, btn) {
+            currentSize = size;
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update preview size
+            const preview = document.getElementById('qr-preview');
+            preview.classList.remove('size-small', 'size-medium', 'size-large');
+            if (size === 5) preview.classList.add('size-small');
+            else if (size === 10) preview.classList.add('size-medium');
+            else if (size === 20) preview.classList.add('size-large');
+        }
+
+        // WiFi Modal functions
+        function openWifiModal() {
+            document.getElementById('wifi-modal').classList.add('show');
+            document.getElementById('wifi-ssid').focus();
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('wifi-password');
+            const icon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function closeWifiModal() {
+            document.getElementById('wifi-modal').classList.remove('show');
+            document.getElementById('wifi-ssid').value = '';
+            document.getElementById('wifi-password').value = '';
+        }
+
+        function applyWifi() {
+            const ssid = document.getElementById('wifi-ssid').value.trim();
+            const password = document.getElementById('wifi-password').value;
+            const encryption = document.getElementById('wifi-encryption').value;
+
+            if (!ssid) {
+                showToast('Please enter a network name!', true);
+                return;
+            }
+
+            // Gerçek veriyi gizli tut
+            wifiData = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+            
+            // Kullanıcıya maskelenmiş hali göster
+            const maskedPassword = password ? '•'.repeat(password.length) : '';
+            document.getElementById('qr-data').value = `📶 WiFi: ${ssid} (Password: ${maskedPassword})`;
+            
+            closeWifiModal();
+            showToast('WiFi details added!');
+        }
+
+        // Close modal on outside click
+        document.getElementById('wifi-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeWifiModal();
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeWifiModal();
+        });
+
+        async function generateQR() {
+            let data = document.getElementById('qr-data').value.trim();
+            const fillColor = document.getElementById('fill-color').value;
+            const backColor = document.getElementById('back-color').value;
+            const preview = document.getElementById('qr-preview');
+            const downloadBtn = document.getElementById('download-btn');
+
+            // WiFi verisi varsa onu kullan
+            if (wifiData) {
+                data = wifiData;
+            }
+
+            if (!data) {
+                showToast('Please enter some content!', true);
+                return;
+            }
+
+            // Show loading state
+            preview.innerHTML = '<div class="loading-spinner"></div>';
+            preview.classList.remove('has-image');
+
+            try {
+                const params = new URLSearchParams({
+                    data: data,
+                    fill_color: fillColor,
+                    back_color: backColor,
+                    box_size: currentSize
+                });
+
+                const response = await fetch(`/api/generate_qr_code?${params}`);
+                
+                if (!response.ok) {
+                    throw new Error('QR kod oluşturulamadı');
+                }
+
+                const blob = await response.blob();
+                currentQrUrl = URL.createObjectURL(blob);
+
+                // Display QR code
+                const img = document.createElement('img');
+                img.src = currentQrUrl;
+                img.alt = 'QR Code';
+                
+                preview.innerHTML = '';
+                preview.appendChild(img);
+                preview.classList.add('has-image');
+
+                // Enable download button
+                downloadBtn.classList.add('active');
+
+                showToast('QR code generated successfully!');
+            } catch (error) {
+                preview.innerHTML = `
+                    <div class="qr-placeholder">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>An error occurred</p>
+                    </div>
+                `;
+                showToast(error.message, true);
+            }
+        }
+
+        function downloadQR() {
+            if (!currentQrUrl) return;
+
+            const link = document.createElement('a');
+            link.href = currentQrUrl;
+            link.download = 'qrcode.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('QR code downloaded!');
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const icon = toast.querySelector('i');
+
+            toastMessage.textContent = message;
+            toast.classList.toggle('error', isError);
+            icon.className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Generate QR on Enter key
+        document.getElementById('qr-data').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateQR();
+            }
+        });
+
+        // Auto-generate on color change
+        document.getElementById('fill-color').addEventListener('change', function() {
+            if (document.getElementById('qr-data').value.trim()) {
+                generateQR();
+            }
+        });
+
+        document.getElementById('back-color').addEventListener('change', function() {
+            if (document.getElementById('qr-data').value.trim()) {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html>
